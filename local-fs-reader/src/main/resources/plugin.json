@@ -1,0 +1,6 @@
+{
+  "name": "local-fs-reader",
+  "class": "com.netease.ds.fscp.reader.LocalFileReader",
+  "description": "useScene: test. mechanism: use datax framework to transport data from hdfs. warn: The more you know about the data, the less problems you encounter.",
+  "developer": "wuqi3"
+}

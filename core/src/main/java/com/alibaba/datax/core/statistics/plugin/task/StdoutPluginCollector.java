@@ -50,8 +50,7 @@ public class StdoutPluginCollector extends AbstractTaskPluginCollector {
             msgGroup.put("exception", t.getMessage());
         }
         if (null != dirty) {
-            msgGroup.put("record", DirtyRecord.asDirtyRecord(dirty)
-                    .getColumns());
+            msgGroup.put("record", DirtyRecord.asDirtyRecord(dirty).getDirPath());
         }
 
         return JSON.toJSONString(msgGroup);

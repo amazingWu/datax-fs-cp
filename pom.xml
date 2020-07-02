@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>com.alibaba.datax</groupId>
@@ -42,57 +43,9 @@
     <modules>
         <module>common</module>
         <module>core</module>
-        <module>transformer</module>
-
-        <!-- reader -->
-        <module>mysqlreader</module>
-        <module>drdsreader</module>
-        <module>sqlserverreader</module>
-        <module>postgresqlreader</module>
-        <module>oraclereader</module>
-        <module>odpsreader</module>
-        <module>otsreader</module>
-        <module>otsstreamreader</module>
-        <module>txtfilereader</module>
-        <module>hdfsreader</module>
-        <module>streamreader</module>
-        <module>ossreader</module>
-        <module>ftpreader</module>
-        <module>mongodbreader</module>
-        <module>rdbmsreader</module>
-        <module>hbase11xreader</module>
-        <module>hbase094xreader</module>
-        <module>opentsdbreader</module>
-
-        <!-- writer -->
-        <module>mysqlwriter</module>
-        <module>drdswriter</module>
-        <module>odpswriter</module>
-        <module>txtfilewriter</module>
-        <module>ftpwriter</module>
-        <module>hdfswriter</module>
-        <module>streamwriter</module>
-        <module>otswriter</module>
-        <module>oraclewriter</module>
-        <module>sqlserverwriter</module>
-        <module>postgresqlwriter</module>
-        <module>osswriter</module>
-        <module>mongodbwriter</module>
-        <module>adswriter</module>
-        <module>ocswriter</module>
-        <module>rdbmswriter</module>
-        <module>hbase11xwriter</module>
-        <module>hbase094xwriter</module>
-        <module>hbase11xsqlwriter</module>
-        <module>hbase11xsqlreader</module>
-        <module>elasticsearchwriter</module>
-        <module>tsdbwriter</module>
-
-        <!-- common support module -->
-        <module>plugin-rdbms-util</module>
-        <module>plugin-unstructured-storage-util</module>
-        <module>hbase20xsqlreader</module>
-        <module>hbase20xsqlwriter</module>
+        <module>local-fs-reader</module>
+        <module>local-fs-writer</module>
+        <module>local-fs-test</module>
     </modules>
 
     <dependencyManagement>

@@ -1,7 +1,8 @@
 package com.alibaba.datax.core.transport.record;
 
-import com.alibaba.datax.common.element.Column;
 import com.alibaba.datax.common.element.Record;
+
+import java.io.InputStream;
 
 /**
  * 作为标示 生产者已经完成生产的标志
@@ -18,31 +19,33 @@ public class TerminateRecord implements Record {
 	}
 
 	@Override
-	public void addColumn(Column column) {
-	}
-
-	@Override
-	public Column getColumn(int i) {
+	public InputStream getInputStream() {
 		return null;
 	}
 
 	@Override
-	public int getColumnNumber() {
-		return 0;
+	public String getDirPath() {
+		return null;
+	}
+
+
+	@Override
+	public String getFileName() {
+		return null;
 	}
 
 	@Override
-	public int getByteSize() {
-		return 0;
+	public void setDirPath(String filePath) {
+
 	}
 
 	@Override
-	public int getMemorySize() {
-		return 0;
+	public void setFileInputStream(InputStream inputStream) {
+
 	}
 
 	@Override
-	public void setColumn(int i, Column column) {
-		return;
+	public void setFileName(String fileName) {
+
 	}
 }

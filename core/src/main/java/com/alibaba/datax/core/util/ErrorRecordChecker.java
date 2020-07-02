@@ -57,8 +57,10 @@ public final class ErrorRecordChecker {
                             recordLimit));
             throw DataXException.asDataXException(
                     FrameworkErrorCode.PLUGIN_DIRTY_DATA_LIMIT_EXCEED,
-                    String.format("脏数据条数检查不通过，限制是[%d]条，但实际上捕获了[%d]条.",
+                    String.format("记录处理错误条数检查不通过，限制是[%d]条，但实际上捕获了[%d]条.",
                             recordLimit, errorNumber));
+        } else {
+            LOG.debug("test: " + errorNumber);
         }
     }
 
@@ -75,7 +77,7 @@ public final class ErrorRecordChecker {
         if (total > 0 && ((double) error / (double) total) > percentageLimit) {
             throw DataXException.asDataXException(
                     FrameworkErrorCode.PLUGIN_DIRTY_DATA_LIMIT_EXCEED,
-                    String.format("脏数据百分比检查不通过，限制是[%f]，但实际上捕获到[%f].",
+                    String.format("记录处理错误百分比检查不通过，限制是[%f]，但实际上捕获到[%f].",
                             percentageLimit, ((double) error / (double) total)));
         }
     }

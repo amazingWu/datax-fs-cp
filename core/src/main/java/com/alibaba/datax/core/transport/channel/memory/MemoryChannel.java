@@ -62,7 +62,7 @@ public class MemoryChannel extends Channel {
 			long startTime = System.nanoTime();
 			this.queue.put(r);
 			waitWriterTime += System.nanoTime() - startTime;
-            memoryBytes.addAndGet(r.getMemorySize());
+            memoryBytes.addAndGet(1);
 		} catch (InterruptedException ex) {
 			Thread.currentThread().interrupt();
 		}
@@ -95,7 +95,7 @@ public class MemoryChannel extends Channel {
 			long startTime = System.nanoTime();
 			Record r = this.queue.take();
 			waitReaderTime += System.nanoTime() - startTime;
-			memoryBytes.addAndGet(-r.getMemorySize());
+			memoryBytes.addAndGet(-1);
 			return r;
 		} catch (InterruptedException e) {
 			Thread.currentThread().interrupt();
@@ -128,7 +128,7 @@ public class MemoryChannel extends Channel {
 	private int getRecordBytes(Collection<Record> rs){
 		int bytes = 0;
 		for(Record r : rs){
-			bytes += r.getMemorySize();
+			bytes += 1;
 		}
 		return bytes;
 	}

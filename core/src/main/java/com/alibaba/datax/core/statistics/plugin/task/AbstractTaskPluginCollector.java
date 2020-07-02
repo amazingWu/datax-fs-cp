@@ -62,12 +62,12 @@ public abstract class AbstractTaskPluginCollector extends TaskPluginCollector {
             this.communication.increaseCounter(
                     CommunicationTool.READ_FAILED_RECORDS, 1);
             this.communication.increaseCounter(
-                    CommunicationTool.READ_FAILED_BYTES, dirtyRecord.getByteSize());
+                    CommunicationTool.READ_FAILED_BYTES, 1);
         } else if (this.pluginType.equals(PluginType.WRITER)) {
             this.communication.increaseCounter(
                     CommunicationTool.WRITE_FAILED_RECORDS, 1);
             this.communication.increaseCounter(
-                    CommunicationTool.WRITE_FAILED_BYTES, dirtyRecord.getByteSize());
+                    CommunicationTool.WRITE_FAILED_BYTES, 1);
         } else {
             throw DataXException.asDataXException(
                     FrameworkErrorCode.RUNTIME_ERROR,

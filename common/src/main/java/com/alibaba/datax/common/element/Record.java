@@ -1,23 +1,32 @@
 package com.alibaba.datax.common.element;
 
+import java.io.InputStream;
+
 /**
  * Created by jingxing on 14-8-24.
  */
 
 public interface Record {
 
-	public void addColumn(Column column);
+    /**
+     * 源文件的流
+     *
+     * @return
+     */
+    InputStream getInputStream();
 
-	public void setColumn(int i, final Column column);
+    /**
+     * 所在目录的相对路径
+     *
+     * @return
+     */
+    String getDirPath();
 
-	public Column getColumn(int i);
+    String getFileName();
 
-	public String toString();
+    void setDirPath(String filePath);
 
-	public int getColumnNumber();
+    void setFileInputStream(InputStream inputStream);
 
-	public int getByteSize();
-
-	public int getMemorySize();
-
+    void setFileName(String fileName);
 }
