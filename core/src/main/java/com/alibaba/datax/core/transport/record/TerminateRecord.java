@@ -3,6 +3,7 @@ package com.alibaba.datax.core.transport.record;
 import com.alibaba.datax.common.element.Record;
 
 import java.io.InputStream;
+import java.util.List;
 
 /**
  * 作为标示 生产者已经完成生产的标志
@@ -24,7 +25,27 @@ public class TerminateRecord implements Record {
 	}
 
 	@Override
-	public String getDirPath() {
+	public String getFileMd5() {
+		return null;
+	}
+
+	@Override
+	public void setFileMd5(String md5) {
+
+	}
+
+	@Override
+	public void setFileLength(Long fileLength) {
+
+	}
+
+	@Override
+	public Long getFileLength() {
+		return 0L;
+	}
+
+	@Override
+	public List<String> getDirPath() {
 		return null;
 	}
 
@@ -35,7 +56,7 @@ public class TerminateRecord implements Record {
 	}
 
 	@Override
-	public void setDirPath(String filePath) {
+	public void setDirPath(List<String> filePath) {
 
 	}
 
@@ -47,5 +68,9 @@ public class TerminateRecord implements Record {
 	@Override
 	public void setFileName(String fileName) {
 
+	}
+
+	@Override
+	public void destroy() {
 	}
 }

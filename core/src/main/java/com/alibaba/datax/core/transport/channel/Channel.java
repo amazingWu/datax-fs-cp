@@ -120,7 +120,7 @@ public abstract class Channel {
     public void push(final Record r) {
         Validate.notNull(r, "record不能为空.");
         this.doPush(r);
-        this.statPush(1L, 1);
+        this.statPush(1L, getLongValueWithDefault(r.getFileLength()));
     }
 
     public void pushTerminate(final TerminateRecord r) {
@@ -141,7 +141,7 @@ public abstract class Channel {
 
     public Record pull() {
         Record record = this.doPull();
-        this.statPull(1L, 1);
+        this.statPull(1L, getLongValueWithDefault(record.getFileLength()));
         return record;
     }
 
@@ -168,7 +168,7 @@ public abstract class Channel {
     private long getByteSize(final Collection<Record> rs) {
         long size = 0;
         for (final Record each : rs) {
-            size += 1;
+            size += getLongValueWithDefault(each.getFileLength());
         }
         return size;
     }
@@ -243,6 +243,15 @@ public abstract class Channel {
                 CommunicationTool.WRITE_RECEIVED_RECORDS, recordSize);
         currentCommunication.increaseCounter(
                 CommunicationTool.WRITE_RECEIVED_BYTES, byteSize);
+    }
+
+    protected static Long getLongValueWithDefault(Long value) {
+        if (value != null) {
+            return value;
+        } else {
+            System.out.println("return default value");
+            return 1L;
+        }
     }
 
 }

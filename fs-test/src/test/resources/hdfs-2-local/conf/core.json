@@ -1,0 +1,54 @@
+
+{
+    "entry": {
+        "jvm": "-Xms1G -Xmx1G",
+        "environment": {}
+    },
+    "common": {
+    },
+    "core": {
+        "dataXServer": {
+            "address": "http://localhost:7001/api",
+            "timeout": 10000,
+            "reportDataxLog": false,
+            "reportPerfLog": false
+        },
+        "transport": {
+            "channel": {
+                "class": "com.alibaba.datax.core.transport.channel.memory.MemoryChannel",
+                "speed": {
+                    "byte": -1,
+                    "record": -1
+                },
+                "flowControlInterval": 20,
+                "capacity": 512,
+                "byteCapacity": 67108864
+            },
+            "exchanger": {
+                "class": "com.alibaba.datax.core.plugin.BufferedRecordExchanger",
+                "bufferSize": 32
+            }
+        },
+        "container": {
+            "job": {
+                "reportInterval": 1000,
+                "sleepInterval": 1000
+            },
+            "taskGroup": {
+                "channel": 5
+            },
+            "trace": {
+                "enable": "false"
+            }
+
+        },
+        "statistics": {
+            "collector": {
+                "plugin": {
+                    "taskClass": "com.alibaba.datax.core.statistics.plugin.task.StdoutPluginCollector",
+                    "maxDirtyNumber": 10
+                }
+            }
+        }
+    }
+}

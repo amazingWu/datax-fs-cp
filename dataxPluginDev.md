@@ -221,39 +221,31 @@ ${DATAX_HOME}
     "content": [
       {
         "reader": {
-          "name": "odpsreader",
+          "name": "local-file-reader",
           "parameter": {
-            "accessKey": "",
-            "accessId": "",
-            "column": [""],
-            "isCompress": "",
-            "odpsServer": "",
-            "partition": [
-              ""
-            ],
-            "project": "",
-            "table": "",
-            "tunnelServer": ""
+            "path": [
+              "src/test/resources/local-2-local/from/testdir",
+              "src/test/resources/local-2-local/from/test"
+            ]
           }
         },
         "writer": {
-          "name": "oraclewriter",
+          "name": "local-file-writer",
           "parameter": {
-            "username": "",
-            "password": "",
-            "column": ["*"],
-            "connection": [
-              {
-                "jdbcUrl": "",
-                "table": [
-                  ""
-                ]
-              }
-            ]
+            "path": "src/test/resources/local-2-local/to",
+            "writeMode": "overwrite"
           }
         }
       }
-    ]
+    ],
+    "setting": {
+      "speed": {
+        "channel": "2"
+      },
+      "errorLimit": {
+        "record": 0
+      }
+    }
   }
 }
 ```
@@ -353,85 +345,101 @@ ${DATAX_HOME}
 跟一般的`生产者-消费者`模式一样，`Reader`插件和`Writer`插件之间也是通过`channel`来实现数据的传输的。`channel`可以是内存的，也可能是持久化的，插件不必关心。插件通过`RecordSender`往`channel`写入数据，通过`RecordReceiver`从`channel`读取数据。
 
 
-`channel`中的一条数据为一个`Record`的对象，`Record`中可以放多个`Column`对象，这可以简单理解为数据库中的记录和列。
+`channel`中的一条数据为一个`Record`的对象，`Record`中可以放一个InputStream，用于writer读取流内容。
 
 `Record`有如下方法：
 
 ```java
 public interface Record {
-    // 加入一个列，放在最后的位置
-    void addColumn(Column column);
-    // 在指定下标处放置一个列
-    void setColumn(int i, final Column column);
-    // 获取一个列
-    Column getColumn(int i);
-    // 转换为json String
-    String toString();
-    // 获取总列数
-    int getColumnNumber();
-    // 计算整条记录在内存中占用的字节数
-    int getByteSize();
+
+    /**
+     * 源文件的流
+     *
+     * @return
+     */
+    InputStream getInputStream();
+
+    /**
+     * 获取文件md5
+     *
+     * @return
+     */
+    String getFileMd5();
+
+    /**
+     * 设置文件md5
+     *
+     * @param md5
+     */
+    void setFileMd5(String md5);
+
+    /**
+     * 设置文件byte长度
+     *
+     * @param fileLength
+     */
+    void setFileLength(Long fileLength);
+
+    /**
+     * 获取文件byte长度
+     *
+     * @return
+     */
+    Long getFileLength();
+
+    /**
+     * 获取文件所在目录的相对路径层次
+     *
+     * @return
+     */
+    List<String> getDirPath();
+
+    /**
+     * 获取文件名
+     *
+     * @return
+     */
+    String getFileName();
+
+    /**
+     * 设置文件所在目录的相对路径层次
+     *
+     * @param filePath 按层次深度排序
+     */
+    void setDirPath(List<String> filePath);
+
+    /**
+     * 设置文件流
+     *
+     * @param inputStream
+     */
+    void setFileInputStream(InputStream inputStream);
+
+    /**
+     * 设置文件名称
+     *
+     * @param fileName
+     */
+    void setFileName(String fileName);
+
+    /**
+     * 销毁方法，释放资源，用于有中间态的
+     */
+    void destroy();
 }
 ```
 
-因为`Record`是一个接口，`Reader`插件首先调用`RecordSender.createRecord()`创建一个`Record`实例，然后把`Column`一个个添加到`Record`中。
+因为`Record`是一个接口，`Reader`插件首先调用`RecordSender.createRecord()`创建一个`Record`实例，然后把相关内容添加到`Record`中。
 
-`Writer`插件调用`RecordReceiver.getFromReader()`方法获取`Record`，然后把`Column`遍历出来，写入目标存储中。当`Reader`尚未退出，传输还在进行时，如果暂时没有数据`RecordReceiver.getFromReader()`方法会阻塞直到有数据。如果传输已经结束，会返回`null`，`Writer`插件可以据此判断是否结束`startWrite`方法。
-
-`Column`的构造和操作，我们在《类型转换》一节介绍。
-
-### 类型转换
-
-为了规范源端和目的端类型转换操作，保证数据不失真，DataX支持六种内部数据类型：
-
-- `Long`：定点数(Int、Short、Long、BigInteger等)。
-- `Double`：浮点数(Float、Double、BigDecimal(无限精度)等)。
-- `String`：字符串类型，底层不限长，使用通用字符集(Unicode)。
-- `Date`：日期类型。
-- `Bool`：布尔值。
-- `Bytes`：二进制，可以存放诸如MP3等非结构化数据。
-
-
-对应地，有`DateColumn`、`LongColumn`、`DoubleColumn`、`BytesColumn`、`StringColumn`和`BoolColumn`六种`Column`的实现。
-
-
-`Column`除了提供数据相关的方法外，还提供一系列以`as`开头的数据类型转换转换方法。
-
-![Columns](https://github.com/alibaba/DataX/blob/master/images/plugin_dev_guide_3.png)
-
-
-DataX的内部类型在实现上会选用不同的java类型：
-
-| 内部类型 | 实现类型 | 备注 |
-| ----- | -------- | ----- |
-| Date  | java.util.Date |     |
-| Long  | java.math.BigInteger|  使用无限精度的大整数，保证不失真   |
-| Double| java.lang.String| 用String表示，保证不失真 |
-| Bytes | byte[]|  |
-| String|  java.lang.String   |     |
-| Bool  | java.lang.Boolean   | |
-
-类型之间相互转换的关系如下：
-
-| from\to     |   Date  |  Long  | Double | Bytes   | String | Bool   |
-| -----   | -------- | ----- | ------ | -------- | ----- |  ----- |
-| Date    |    -     |  使用毫秒时间戳  |   不支持  |    不支持      |   使用系统配置的date/time/datetime格式转换    |  不支持  |
-| Long    |  作为毫秒时间戳构造Date    |   -   | BigInteger转为BigDecimal，然后BigDecimal.doubleValue()       |    不支持      |  BigInteger.toString()    | 0为false，否则true   |
-| Double  |  不支持   | 内部String构造BigDecimal，然后BigDecimal.longValue()   |    -   |     不支持     |  直接返回内部String    |        |
-| Bytes   |  不支持   | 不支持 | 不支持  |    -     |  按照`common.column.encoding`配置的编码转换为String，默认`utf-8`  |  不支持  |
-| String  | 按照配置的date/time/datetime/extra格式解析 |  用String构造BigDecimal，然后取longValue()  |   用String构造BigDecimal，然后取doubleValue(),会正确处理`NaN`/`Infinity`/`-Infinity`  |   按照`common.column.encoding`配置的编码转换为byte[]，默认`utf-8`     |    -  |    "true"为`true`, "false"为`false`，大小写不敏感。其他字符串不支持    |
-| Bool    |    不支持  |  `true`为`1L`，否则`0L`     |        | `true`为`1.0`，否则`0.0`   |  不支持  |    -   |
-
+`Writer`插件调用`RecordReceiver.getFromReader()`方法获取`Record`，然后把inputStream读取出来，写入目标存储中。当`Reader`尚未退出，传输还在进行时，如果暂时没有数据`RecordReceiver.getFromReader()`方法会阻塞直到有数据。如果传输已经结束，会返回`null`，`Writer`插件可以据此判断是否结束`startWrite`方法。
 
 ### 脏数据处理
 
 #### 什么是脏数据？
 
-目前主要有三类脏数据：
+目前主要的脏数据：
 
-1. Reader读到不支持的类型、不合法的值。
-1. 不支持的类型转换，比如：`Bytes`转换为`Date`。
-2. 写入目标端失败，比如：写mysql整型长度超长。
+1. 写入目标端失败，比如：IO异常等。
 
 #### 如何处理脏数据
 
@@ -440,7 +448,6 @@ DataX的内部类型在实现上会选用不同的java类型：
 用户可以在任务的配置中指定脏数据限制条数或者百分比限制，当脏数据超出限制时，框架会结束同步任务，退出。插件需要保证脏数据都被收集到，其他工作交给框架就好。
 
 ### 加载原理
-
 
 1. 框架扫描`plugin/reader`和`plugin/writer`目录，加载每个插件的`plugin.json`文件。
 2. 以`plugin.json`文件中`name`为key，索引所有的插件配置。如果发现重名的插件，框架会异常退出。

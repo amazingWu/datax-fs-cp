@@ -6,22 +6,26 @@ import com.alibaba.datax.common.exception.DataXException;
 import com.alibaba.datax.common.plugin.RecordSender;
 import com.alibaba.datax.common.spi.Reader;
 import com.alibaba.datax.common.util.Configuration;
-import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
+import com.google.common.collect.Lists;
+import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.lang3.StringUtils;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.util.ArrayList;
 import java.util.List;
 
 /**
+ * 限制：只能使用MemoryChannel
+ *
  * @author wuqi3@corp.netease.com
  * @created 2020-07-02 15:26
  * @since
  */
 public class LocalFileReader extends Reader {
 
+    private static final String FILE_ENTITY = "fileEntity";
 
     public static class Job extends Reader.Job {
         private Configuration originConfig;
@@ -29,40 +33,10 @@ public class LocalFileReader extends Reader {
 
         @Override
         public List<Configuration> split(int adviceNumber) {
-            System.out.println("reader split");
             List<Configuration> configurations = new ArrayList<Configuration>();
-            int maxTask = this.originConfig.getInt("max-task-count", 1);
-            if (maxTask >= this.fileEntities.size()) {
-                for (int i = 0; i < this.fileEntities.size(); i++) {
-                    Configuration configuration = this.originConfig.clone();
-                    List<FileEntity> items = new ArrayList<FileEntity>();
-                    items.add(this.fileEntities.get(i));
-                    configuration.set("fileEntries", items);
-                    configurations.add(configuration);
-                }
-            } else {
-                int count1 = this.fileEntities.size() / maxTask;
-                int count2 = this.fileEntities.size() % maxTask;
-                int maxCount = count2 == 0 ? count1 : count1 + 1;
-
-                int num = 0;
-                List<FileEntity> items = new ArrayList<FileEntity>(maxCount);
+            for (FileEntity fileEntity : this.fileEntities) {
                 Configuration configuration = this.originConfig.clone();
-                for (FileEntity fileEntity : this.fileEntities) {
-                    if (num < maxCount) {
-                        items.add(fileEntity);
-                    } else {
-                        configuration.set("fileEntries", items);
-                        configurations.add(configuration);
-                        configuration.clone();
-                        num = 0;
-                        configuration = this.originConfig.clone();
-                        items = new ArrayList<FileEntity>(maxCount);
-                        items.add(fileEntity);
-                    }
-                    num++;
-                }
-                configuration.set("fileEntries", items);
+                configuration.set(FILE_ENTITY, fileEntity);
                 configurations.add(configuration);
             }
             return configurations;
@@ -70,10 +44,9 @@ public class LocalFileReader extends Reader {
 
         @Override
         public void init() {
-            System.out.println("reader init");
             this.originConfig = super.getPluginJobConf();
             List<FileEntity> fileList = new ArrayList<FileEntity>();
-            List<String> fileDir = this.originConfig.getList("src", String.class);
+            List<String> fileDir = this.originConfig.getList(Key.PATH, String.class);
             if (fileDir.isEmpty()) {
                 throw DataXException.asDataXException(CommonErrorCode.CONFIG_ERROR, "未指定读取路径或文件");
             }
@@ -82,14 +55,13 @@ public class LocalFileReader extends Reader {
                 if (!file.exists()) {
                     throw DataXException.asDataXException(CommonErrorCode.CONFIG_ERROR, "文件不存在");
                 }
-                fileList.addAll(getAllFiles(s, ""));
+                fileList.addAll(getAllFiles(s, Lists.<String>newArrayList()));
             }
             this.fileEntities = fileList;
         }
 
         @Override
         public void destroy() {
-            System.out.println("reader destroy");
         }
     }
 
@@ -97,35 +69,34 @@ public class LocalFileReader extends Reader {
 
         @Override
         public void startRead(RecordSender recordSender) {
-            System.out.println("reader task start");
+            JSONObject fileEntity = this.getPluginJobConf().get(FILE_ENTITY, JSONObject.class);
+            FileEntity fileEntity1 = JSONObject.parseObject(fileEntity.toJSONString(), FileEntity.class);
+            Record record = null;
             try {
-                List<JSONObject> list = this.getPluginJobConf().getList("fileEntries", JSONObject.class);
-                for (JSONObject fileEntity : list) {
-                    FileEntity fileEntity1 = JSONObject.parseObject(fileEntity.toJSONString(), FileEntity.class);
-                    Record record = null;
-                    try {
-                        record = recordSender.createRecord();
-                        record.setDirPath(fileEntity1.getDirRelativePath());
-                        record.setFileName(fileEntity1.getFileName());
-                        record.setFileInputStream(FileUtils.openInputStream(new File(fileEntity1.getFullPath())));
-                        recordSender.sendToWriter(record);
-                    } catch (Exception e) {
-                        getTaskPluginCollector().collectDirtyRecord(record, e);
-                    }
-                }
+                File file = new File(fileEntity1.getFullPath());
+                record = recordSender.createRecord();
+                record.setFileLength(file.length());
+                record.setDirPath(fileEntity1.getDirRelativePath());
+                record.setFileName(fileEntity1.getFileName());
+                FileInputStream fileInputStream = new FileInputStream(file);
+                record.setFileMd5(DigestUtils.md5Hex(fileInputStream));
+                fileInputStream.close();
+                record.setFileInputStream(FileUtils.openInputStream(file));
+                recordSender.sendToWriter(record);
             } catch (Exception e) {
+                if (record != null) {
+                    record.destroy();
+                }
                 throw DataXException.asDataXException(CommonErrorCode.RUNTIME_ERROR, e.getMessage(), e);
             }
         }
 
         @Override
         public void init() {
-            System.out.println("reader task init");
         }
 
         @Override
         public void destroy() {
-            System.out.println("reader task destroy");
         }
     }
 
@@ -135,9 +106,9 @@ public class LocalFileReader extends Reader {
      * @param dirRelativePath
      * @return
      */
-    private static List<FileEntity> getAllFiles(String contextFilePath, String dirRelativePath) {
+    private static List<FileEntity> getAllFiles(String contextFilePath, List<String> dirRelativePath) {
         List<FileEntity> result = new ArrayList<FileEntity>();
-        File file = new File(StringUtils.isEmpty(dirRelativePath) ? contextFilePath : contextFilePath + "/" + dirRelativePath);
+        File file = new File(dirRelativePath.isEmpty() ? contextFilePath : contextFilePath + File.separator + Record.RecordHelp.getPathString(dirRelativePath, File.separator));
         if (!file.exists()) {
             throw DataXException.asDataXException(CommonErrorCode.CONFIG_ERROR, "文件不存在");
         }
@@ -145,11 +116,11 @@ public class LocalFileReader extends Reader {
             File[] files = file.listFiles();
             for (File file1 : files) {
                 if (file1.isDirectory()) {
-                    result.addAll(getAllFiles(contextFilePath, dirRelativePath + "/" + file1.getName()));
+                    result.addAll(getAllFiles(contextFilePath, copyAndAdd(dirRelativePath, file1.getName())));
                 } else {
                     FileEntity fileEntity = new FileEntity();
                     fileEntity.setFileName(file1.getName());
-                    fileEntity.setFullPath(contextFilePath + "/" + dirRelativePath + "/" + file1.getName());
+                    fileEntity.setFullPath(contextFilePath + File.separator + Record.RecordHelp.getPathString(dirRelativePath, File.separator) + File.separator + file1.getName());
                     fileEntity.setDirRelativePath(dirRelativePath);
                     result.add(fileEntity);
                 }
@@ -161,6 +132,12 @@ public class LocalFileReader extends Reader {
             fileEntity.setDirRelativePath(dirRelativePath);
             result.add(fileEntity);
         }
+        return result;
+    }
+
+    private static final List<String> copyAndAdd(List<String> collection, String value) {
+        List<String> result = Lists.newArrayList(collection);
+        result.add(value);
         return result;
     }
 

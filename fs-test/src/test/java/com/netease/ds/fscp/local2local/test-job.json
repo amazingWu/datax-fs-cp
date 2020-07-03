@@ -1,0 +1,32 @@
+{
+  "job": {
+    "content": [
+      {
+        "reader": {
+          "name": "local-file-reader",
+          "parameter": {
+            "path": [
+              "src/test/resources/local-2-local/from/testdir",
+              "src/test/resources/local-2-local/from/test"
+            ]
+          }
+        },
+        "writer": {
+          "name": "local-file-writer",
+          "parameter": {
+            "path": "src/test/resources/local-2-local/to/${dataX.30.days.ago}",
+            "writeMode": "overwrite"
+          }
+        }
+      }
+    ],
+    "setting": {
+      "speed": {
+        "channel": "2"
+      },
+      "errorLimit": {
+        "record": 0
+      }
+    }
+  }
+}

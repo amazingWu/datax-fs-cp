@@ -1,0 +1,32 @@
+{
+  "job": {
+    "content": [
+      {
+        "reader": {
+          "name": "local-file-reader",
+          "parameter": {
+            "path": [
+              "E:\\入门指引"
+            ]
+          }
+        },
+        "writer": {
+          "name": "hdfs-file-writer",
+          "parameter": {
+            "defaultFS": "hdfs://hadoop001:9000",
+            "path": "/user/test/test1",
+            "writeMode": "overwrite"
+          }
+        }
+      }
+    ],
+    "setting": {
+      "speed": {
+        "channel": "2"
+      },
+      "errorLimit": {
+        "record": 0
+      }
+    }
+  }
+}

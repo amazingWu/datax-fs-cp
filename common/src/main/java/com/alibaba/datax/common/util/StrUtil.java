@@ -22,7 +22,7 @@ public class StrUtil {
     private final static DecimalFormat df = new DecimalFormat("0.00");
 
     private static final Pattern VARIABLE_PATTERN = Pattern
-            .compile("(\\$)\\{?(\\w+)\\}?");
+            .compile("(\\$)\\{?([\\w-\\.]+)\\}?");
 
     private static String SYSTEM_ENCODING = System.getProperty("file.encoding");
 

@@ -62,16 +62,23 @@ public abstract class AbstractTaskPluginCollector extends TaskPluginCollector {
             this.communication.increaseCounter(
                     CommunicationTool.READ_FAILED_RECORDS, 1);
             this.communication.increaseCounter(
-                    CommunicationTool.READ_FAILED_BYTES, 1);
+                    CommunicationTool.READ_FAILED_BYTES, getValueWithDefault(dirtyRecord.getFileLength()));
         } else if (this.pluginType.equals(PluginType.WRITER)) {
             this.communication.increaseCounter(
                     CommunicationTool.WRITE_FAILED_RECORDS, 1);
             this.communication.increaseCounter(
-                    CommunicationTool.WRITE_FAILED_BYTES, 1);
+                    CommunicationTool.WRITE_FAILED_BYTES, getValueWithDefault(dirtyRecord.getFileLength()));
         } else {
             throw DataXException.asDataXException(
                     FrameworkErrorCode.RUNTIME_ERROR,
                     String.format("不知道的插件类型[%s].", this.pluginType));
         }
+    }
+
+    protected static Long getValueWithDefault(Long value) {
+        if (value == null) {
+            return 1L;
+        }
+        return value;
     }
 }

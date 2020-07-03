@@ -50,7 +50,8 @@ public class StdoutPluginCollector extends AbstractTaskPluginCollector {
             msgGroup.put("exception", t.getMessage());
         }
         if (null != dirty) {
-            msgGroup.put("record", DirtyRecord.asDirtyRecord(dirty).getDirPath());
+            DirtyRecord dirtyRecord = DirtyRecord.asDirtyRecord(dirty);
+            msgGroup.put("record", dirtyRecord.toString());
         }
 
         return JSON.toJSONString(msgGroup);
@@ -60,7 +61,7 @@ public class StdoutPluginCollector extends AbstractTaskPluginCollector {
     public void collectDirtyRecord(Record dirtyRecord, Throwable t,
                                    String errorMessage) {
         int logNum = currentLogNum.getAndIncrement();
-        if(logNum==0 && t!=null){
+        if (logNum == 0 && t != null) {
             LOG.error("", t);
         }
         if (maxLogNum.intValue() < 0 || currentLogNum.intValue() < maxLogNum.intValue()) {

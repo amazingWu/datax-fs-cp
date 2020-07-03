@@ -21,7 +21,9 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.text.SimpleDateFormat;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.List;
 import java.util.Set;
 import java.util.regex.Matcher;
@@ -32,6 +34,8 @@ import java.util.regex.Pattern;
  */
 public class Engine {
     private static final Logger LOG = LoggerFactory.getLogger(Engine.class);
+    private static final SimpleDateFormat SIMPLE_DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd");
+    private static final long ONE_DAY = 24 * 60 * 60 * 1000L;
 
     private static String RUNTIME_MODE;
 
@@ -49,7 +53,7 @@ public class Engine {
         boolean isJob = !("taskGroup".equalsIgnoreCase(allConf
                 .getString(CoreConstant.DATAX_CORE_CONTAINER_MODEL)));
         //JobContainer会在schedule后再行进行设置和调整值
-        int channelNumber =0;
+        int channelNumber = 0;
         AbstractContainer container;
         long instanceId;
         int taskGroupId = -1;
@@ -74,21 +78,21 @@ public class Engine {
         boolean perfReportEnable = allConf.getBool(CoreConstant.DATAX_CORE_REPORT_DATAX_PERFLOG, true);
 
         //standlone模式的datax shell任务不进行汇报
-        if(instanceId == -1){
+        if (instanceId == -1) {
             perfReportEnable = false;
         }
 
         int priority = 0;
         try {
             priority = Integer.parseInt(System.getenv("SKYNET_PRIORITY"));
-        }catch (NumberFormatException e){
-            LOG.warn("prioriy set to 0, because NumberFormatException, the value is: "+System.getProperty("PROIORY"));
+        } catch (NumberFormatException e) {
+            LOG.warn("prioriy set to 0, because NumberFormatException, the value is: " + System.getProperty("PROIORY"));
         }
 
         Configuration jobInfoConfig = allConf.getConfiguration(CoreConstant.DATAX_JOB_JOBINFO);
         //初始化PerfTrace
         PerfTrace perfTrace = PerfTrace.getInstance(isJob, instanceId, taskGroupId, priority, traceEnable);
-        perfTrace.setJobInfo(jobInfoConfig,perfReportEnable,channelNumber);
+        perfTrace.setJobInfo(jobInfoConfig, perfReportEnable, channelNumber);
         container.start();
 
     }
@@ -102,12 +106,12 @@ public class Engine {
 
         filterSensitiveConfiguration(jobContent);
 
-        jobConfWithSetting.set("content",jobContent);
+        jobConfWithSetting.set("content", jobContent);
 
         return jobConfWithSetting.beautify();
     }
 
-    public static Configuration filterSensitiveConfiguration(Configuration configuration){
+    public static Configuration filterSensitiveConfiguration(Configuration configuration) {
         Set<String> keys = configuration.getKeys();
         for (final String key : keys) {
             boolean isSensitive = StringUtils.endsWithIgnoreCase(key, "password")
@@ -119,7 +123,21 @@ public class Engine {
         return configuration;
     }
 
+    private static void setDefaultSystemParam() {
+        long now = System.currentTimeMillis();
+        System.setProperty("dataX.current.date", SIMPLE_DATE_FORMAT.format(new Date(now)));
+        System.setProperty("dataX.1.days.ago", SIMPLE_DATE_FORMAT.format(new Date(now - ONE_DAY)));
+        System.setProperty("dataX.2.days.ago", SIMPLE_DATE_FORMAT.format(new Date(now - 2 * ONE_DAY)));
+        System.setProperty("dataX.3.days.ago", SIMPLE_DATE_FORMAT.format(new Date(now - 3 * ONE_DAY)));
+        System.setProperty("dataX.4.days.ago", SIMPLE_DATE_FORMAT.format(new Date(now - 4 * ONE_DAY)));
+        System.setProperty("dataX.5.days.ago", SIMPLE_DATE_FORMAT.format(new Date(now - 5 * ONE_DAY)));
+        System.setProperty("dataX.6.days.ago", SIMPLE_DATE_FORMAT.format(new Date(now - 6 * ONE_DAY)));
+        System.setProperty("dataX.7.days.ago", SIMPLE_DATE_FORMAT.format(new Date(now - 7 * ONE_DAY)));
+        System.setProperty("dataX.30.days.ago", SIMPLE_DATE_FORMAT.format(new Date(now - 30 * ONE_DAY)));
+    }
+
     public static void entry(final String[] args) throws Throwable {
+        // 注入默认参数
         Options options = new Options();
         options.addOption("job", true, "Job config.");
         options.addOption("jobid", true, "Job unique id.");
@@ -127,6 +145,8 @@ public class Engine {
 
         BasicParser parser = new BasicParser();
         CommandLine cl = parser.parse(options, args);
+
+        setDefaultSystemParam();
 
         String jobPath = cl.getOptionValue("job");
 
@@ -174,8 +194,8 @@ public class Engine {
 
     /**
      * -1 表示未能解析到 jobId
-     *
-     *  only for dsc & ds & datax 3 update
+     * <p>
+     * only for dsc & ds & datax 3 update
      */
     private static long parseJobIdFromUrl(List<String> patternStringList, String url) {
         long result = -1;

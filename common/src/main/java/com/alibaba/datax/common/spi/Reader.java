@@ -20,7 +20,9 @@ public abstract class Reader extends BaseObject {
         /**
          * 所在目录相对于配置路径的路径
          */
-        private String dirRelativePath;
+        private List<String> dirRelativePath;
+
+        private Long fileLength;
 
         public String getFullPath() {
             return fullPath;
@@ -30,11 +32,11 @@ public abstract class Reader extends BaseObject {
             this.fullPath = fullPath;
         }
 
-        public String getDirRelativePath() {
+        public List<String> getDirRelativePath() {
             return dirRelativePath;
         }
 
-        public void setDirRelativePath(String dirRelativePath) {
+        public void setDirRelativePath(List<String> dirRelativePath) {
             this.dirRelativePath = dirRelativePath;
         }
 
@@ -44,6 +46,14 @@ public abstract class Reader extends BaseObject {
 
         public void setFileName(String fileName) {
             this.fileName = fileName;
+        }
+
+        public Long getFileLength() {
+            return fileLength;
+        }
+
+        public void setFileLength(Long fileLength) {
+            this.fileLength = fileLength;
         }
     }
 

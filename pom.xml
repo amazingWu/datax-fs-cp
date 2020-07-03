@@ -33,7 +33,7 @@
         <junit-version>4.11</junit-version>
         <tddl.version>5.1.22-1</tddl.version>
         <swift-version>1.0.0</swift-version>
-
+        <commons-codec-version>1.11</commons-codec-version>
         <project-sourceEncoding>UTF-8</project-sourceEncoding>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
@@ -45,7 +45,9 @@
         <module>core</module>
         <module>local-fs-reader</module>
         <module>local-fs-writer</module>
-        <module>local-fs-test</module>
+        <module>fs-test</module>
+        <module>hdfs-fs-writer</module>
+        <module>hdfs-fs-reader</module>
     </modules>
 
     <dependencyManagement>
@@ -60,11 +62,11 @@
                 <artifactId>fastjson</artifactId>
                 <version>${fastjson-version}</version>
             </dependency>
-            <!--<dependency>
+            <dependency>
                 <groupId>com.google.guava</groupId>
                 <artifactId>guava</artifactId>
                 <version>${guava-version}</version>
-            </dependency>-->
+            </dependency>
             <dependency>
                 <groupId>commons-io</groupId>
                 <artifactId>commons-io</artifactId>
@@ -120,6 +122,11 @@
                 <artifactId>mockito-all</artifactId>
                 <version>1.9.5</version>
                 <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>commons-codec</groupId>
+                <artifactId>commons-codec</artifactId>
+                <version>${commons-codec-version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>
