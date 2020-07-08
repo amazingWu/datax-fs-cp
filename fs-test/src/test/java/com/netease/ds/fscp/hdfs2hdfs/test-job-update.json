@@ -3,7 +3,7 @@
     "content": [
       {
         "reader": {
-          "name": "hdfs-file-reader",
+          "name": "hdfs-fs-reader",
           "parameter": {
             "defaultFS": "hdfs://hadoop001:9000",
             "path": [
@@ -12,7 +12,7 @@
           }
         },
         "writer": {
-          "name": "hdfs-file-writer",
+          "name": "hdfs-fs-writer",
           "parameter": {
             "defaultFS": "hdfs://hadoop001:9000",
             "path": "/user/test/test2_1",

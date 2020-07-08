@@ -16,7 +16,6 @@ public class FscpTest {
     @Test
     public void testJob() throws Throwable {
         System.setProperty("datax.home", "src/test/resources/local-2-local");
-        System.setProperty("yy-MM-dd", "2020-07-08");
         Engine.entry(new String[]{
                 "-job", jobPath, "-jobid", jobId, "-mode", jobMode
         });

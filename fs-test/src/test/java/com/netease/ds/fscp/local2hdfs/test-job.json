@@ -3,7 +3,7 @@
     "content": [
       {
         "reader": {
-          "name": "local-file-reader",
+          "name": "local-fs-reader",
           "parameter": {
             "path": [
               "E:\\入门指引"
@@ -11,7 +11,7 @@
           }
         },
         "writer": {
-          "name": "hdfs-file-writer",
+          "name": "hdfs-fs-writer",
           "parameter": {
             "defaultFS": "hdfs://hadoop001:9000",
             "path": "/user/test/test1",
