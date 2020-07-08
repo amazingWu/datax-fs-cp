@@ -1,6 +1,7 @@
 {
   "name": "local-fs-writer",
-  "class": "com.netease.ds.fscp.writer.LocalFileWriter",
-  "description": "useScene: test. mechanism: use datax framework to transport data from local file system. warn: The more you know about the data, the less problems you encounter.",
-  "developer": "wuqi3"
+  "parameter": {
+    "path": "",
+    "writeMode": ""
+  }
 }

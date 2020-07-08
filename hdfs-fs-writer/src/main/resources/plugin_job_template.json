@@ -1,6 +1,8 @@
 {
   "name": "hdfs-fs-writer",
-  "class": "com.netease.ds.fscp.hdfs.writer.HdfsFileWriter",
-  "description": "useScene: test. mechanism: use datax framework to transport data from hdfs. warn: The more you know about the data, the less problems you encounter.",
-  "developer": "wuqi3"
+  "parameter": {
+    "defaultFS": "",
+    "path": "",
+    "writeMode": ""
+  }
 }
