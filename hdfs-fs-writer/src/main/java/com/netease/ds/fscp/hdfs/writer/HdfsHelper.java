@@ -303,7 +303,7 @@ public class HdfsHelper {
         long totalBytesRead = 0;
         try {
             while ((bytesRead = inputStream.read(buffer)) > 0) {
-                outputStream.write(buffer);
+                outputStream.write(buffer, 0, bytesRead);
                 totalBytesRead += bytesRead;
             }
             outputStream.flush();
